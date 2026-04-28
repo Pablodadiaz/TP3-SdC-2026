@@ -20,13 +20,16 @@ _start:
 .code32             # A partir de acá, el procesador está en 32 bits
 protected_mode:
     # 5. Configurar el resto de los registros de segmento con el selector de datos
-    # El 0x10 es el offset en la GDT para nuestro segmento de datos
     movw $0x10, %ax
     movw %ax, %ds
     movw %ax, %es
     movw %ax, %fs
     movw %ax, %gs
     movw %ax, %ss
+
+    # --- PRUEBA DE ESCRITURA ILEGAL ---
+    movl $0x00000000, %ebx
+    movb $0xAA, (%ebx)      # ¡Esto va a causar el Triple Fault!
 
     # Bucle infinito para no crashear
     jmp .
@@ -53,7 +56,7 @@ gdt_start:
     .word 0xFFFF        # Limit 0:15
     .word 0x0000        # Base 0:15 (Ojo acá, sumado al byte siguiente arman la base)
     .byte 0x01          # Base 16:23 -> BASE TOTAL: 0x00010000
-    .byte 0b10010010    # Presente, Privilegio 0 (Ring 0), Tipo: Datos Lectura/Escritura
+    .byte 0b10010000    # Presente, Privilegio 0 (Ring 0), Tipo: Datos SOLO LECTURA
     .byte 0b11001111    # Granularidad (4KB), Tamaño 32-bit, Limit 16:19
     .byte 0x00          # Base 24:31
 gdt_end:
