@@ -1,0 +1,119 @@
+
+main.o:     formato del fichero elf64-x86-64
+
+
+Desensamblado de la sección .text:
+
+0000000000000000 <_start>:
+   0:	be 00 00 b4 0e       	mov    $0xeb40000,%esi
+
+0000000000000005 <print_loop>:
+   5:	ac                   	lods   %ds:(%rsi),%al
+   6:	08 c0                	or     %al,%al
+   8:	74 04                	je     e <halt>
+   a:	cd 10                	int    $0x10
+   c:	eb f7                	jmp    5 <print_loop>
+
+000000000000000e <halt>:
+   e:	f4                   	hlt
+   f:	eb fd                	jmp    e <halt>
+
+0000000000000011 <msg>:
+  11:	46                   	rex.RX
+  12:	46                   	rex.RX
+  13:	46                   	rex.RX
+  14:	46                   	rex.RX
+  15:	46 20 20             	rex.RX and %r12b,(%rax)
+  18:	43                   	rex.XB
+  19:	43                   	rex.XB
+  1a:	43                   	rex.XB
+  1b:	43                   	rex.XB
+  1c:	43 20 20             	rex.XB and %spl,(%r8)
+  1f:	45                   	rex.RB
+  20:	45                   	rex.RB
+  21:	45                   	rex.RB
+  22:	45                   	rex.RB
+  23:	45 20 20             	and    %r12b,(%r8)
+  26:	46                   	rex.RX
+  27:	46                   	rex.RX
+  28:	46                   	rex.RX
+  29:	46                   	rex.RX
+  2a:	46 20 20             	rex.RX and %r12b,(%rax)
+  2d:	59                   	pop    %rcx
+  2e:	20 20                	and    %ah,(%rax)
+  30:	20 59 20             	and    %bl,0x20(%rcx)
+  33:	20 4e 20             	and    %cl,0x20(%rsi)
+  36:	20 20                	and    %ah,(%rax)
+  38:	4e 0d 0a 46 20 20    	rex.WRX or $0x2020460a,%rax
+  3e:	20 20                	and    %ah,(%rax)
+  40:	20 20                	and    %ah,(%rax)
+  42:	43 20 20             	rex.XB and %spl,(%r8)
+  45:	20 20                	and    %ah,(%rax)
+  47:	20 20                	and    %ah,(%rax)
+  49:	45 20 20             	and    %r12b,(%r8)
+  4c:	20 20                	and    %ah,(%rax)
+  4e:	20 20                	and    %ah,(%rax)
+  50:	46 20 20             	rex.RX and %r12b,(%rax)
+  53:	20 20                	and    %ah,(%rax)
+  55:	20 20                	and    %ah,(%rax)
+  57:	20 59 20             	and    %bl,0x20(%rcx)
+  5a:	59                   	pop    %rcx
+  5b:	20 20                	and    %ah,(%rax)
+  5d:	20 4e 4e             	and    %cl,0x4e(%rsi)
+  60:	20 20                	and    %ah,(%rax)
+  62:	4e 0d 0a 46 46 46    	rex.WRX or $0x4646460a,%rax
+  68:	46 20 20             	rex.RX and %r12b,(%rax)
+  6b:	20 43 20             	and    %al,0x20(%rbx)
+  6e:	20 20                	and    %ah,(%rax)
+  70:	20 20                	and    %ah,(%rax)
+  72:	20 45 45             	and    %al,0x45(%rbp)
+  75:	45                   	rex.RB
+  76:	45 20 20             	and    %r12b,(%r8)
+  79:	20 46 46             	and    %al,0x46(%rsi)
+  7c:	46                   	rex.RX
+  7d:	46 20 20             	rex.RX and %r12b,(%rax)
+  80:	20 20                	and    %ah,(%rax)
+  82:	20 59 20             	and    %bl,0x20(%rcx)
+  85:	20 20                	and    %ah,(%rax)
+  87:	20 4e 20             	and    %cl,0x20(%rsi)
+  8a:	4e 20 4e 0d          	rex.WRX and %r9b,0xd(%rsi)
+  8e:	0a 46 20             	or     0x20(%rsi),%al
+  91:	20 20                	and    %ah,(%rax)
+  93:	20 20                	and    %ah,(%rax)
+  95:	20 43 20             	and    %al,0x20(%rbx)
+  98:	20 20                	and    %ah,(%rax)
+  9a:	20 20                	and    %ah,(%rax)
+  9c:	20 45 20             	and    %al,0x20(%rbp)
+  9f:	20 20                	and    %ah,(%rax)
+  a1:	20 20                	and    %ah,(%rax)
+  a3:	20 46 20             	and    %al,0x20(%rsi)
+  a6:	20 20                	and    %ah,(%rax)
+  a8:	20 20                	and    %ah,(%rax)
+  aa:	20 20                	and    %ah,(%rax)
+  ac:	20 59 20             	and    %bl,0x20(%rcx)
+  af:	20 20                	and    %ah,(%rax)
+  b1:	20 4e 20             	and    %cl,0x20(%rsi)
+  b4:	20 4e 4e             	and    %cl,0x4e(%rsi)
+  b7:	0d 0a 46 20 20       	or     $0x2020460a,%eax
+  bc:	20 20                	and    %ah,(%rax)
+  be:	20 20                	and    %ah,(%rax)
+  c0:	43                   	rex.XB
+  c1:	43                   	rex.XB
+  c2:	43                   	rex.XB
+  c3:	43                   	rex.XB
+  c4:	43 20 20             	rex.XB and %spl,(%r8)
+  c7:	45                   	rex.RB
+  c8:	45                   	rex.RB
+  c9:	45                   	rex.RB
+  ca:	45                   	rex.RB
+  cb:	45 20 20             	and    %r12b,(%r8)
+  ce:	46 20 20             	rex.RX and %r12b,(%rax)
+  d1:	20 20                	and    %ah,(%rax)
+  d3:	20 20                	and    %ah,(%rax)
+  d5:	20 20                	and    %ah,(%rax)
+  d7:	59                   	pop    %rcx
+  d8:	20 20                	and    %ah,(%rax)
+  da:	20 20                	and    %ah,(%rax)
+  dc:	4e 20 20             	rex.WRX and %r12b,(%rax)
+  df:	20 4e 0d             	and    %cl,0xd(%rsi)
+  e2:	0a 00                	or     (%rax),%al
