@@ -1,66 +1,67 @@
-.code16             # Arrancamos en 16 bits (Modo Real)
-.global _start
+[BITS 16]           ; Le decimos al ensamblador que empezamos en 16 bits
+[ORG 0x7C00]        ; Dirección de memoria donde la BIOS carga este código
+arranque:
+    ; PASO 1: Desactivar interrupciones
+    cli                     
+    ; PASO 2: Cargar la GDT
+    lgdt [gdt_descriptor]   
+    ; PASO 3: Cambiar el bit PE en CR0
+    mov eax, cr0            ; Copiamos el contenido de CR0 a EAX
+    or eax, 0x1             ; Cambiamos el primer bit a 1 (Protection Enable)
+    mov cr0, eax            ; Lo volvemos a guardar en CR0
 
-_start:
-    # 1. Deshabilitar interrupciones
-    cli             
 
-    # 2. Cargar el registro GDTR con la dirección y tamaño de nuestra GDT
-    lgdt gdt_descriptor
+    ; PASO 4: Salto largo (Far Jump) para limpiar el procesador
+    ; 0x08 es nuestro selector de código en la GDT
+    jmp 0x08:modo_protegido 
+; ---------------------------------------------------------
+; AQUÍ EMPIEZA EL MODO PROTEGIDO (32 BITS)
+; ---------------------------------------------------------
+[BITS 32]
+modo_protegido:
+    ; PASO 5: Actualizar los registros de segmento
+    ; 0x10 es nuestro selector de datos en la GDT
+    mov ax, 0x10            
+    mov ds, ax              ; Segmento de datos
+    mov ss, ax              ; Segmento de pila (Stack)
+    mov es, ax              ; Segmento extra
+    mov fs, ax
+    mov gs, ax
 
-    # 3. Fijar el bit más bajo del CR0 (PE - Protection Enable) en 1
-    movl %cr0, %eax
-    orl $0x1, %eax
-    movl %eax, %cr0
+    ; (Opcional) Escribir una 'X' verde en la pantalla para comprobar que funcionó
+    mov byte [0xB8000], 'X' ; Carácter 'X'
+    mov byte [0xB8001], 0x0A ; Color Verde
 
-    # 4. Salto largo (Far Jump) para limpiar el pipeline y cargar CS
-    # El 0x08 es el offset en la GDT para nuestro segmento de código
-    ljmp $0x08, $protected_mode
-
-.code32             # A partir de acá, el procesador está en 32 bits
-protected_mode:
-    # 5. Configurar el resto de los registros de segmento con el selector de datos
-    movw $0x10, %ax
-    movw %ax, %ds
-    movw %ax, %es
-    movw %ax, %fs
-    movw %ax, %gs
-    movw %ax, %ss
-
-    # --- PRUEBA DE ESCRITURA ILEGAL ---
-    movl $0x00000000, %ebx
-    movb $0xAA, (%ebx)      # ¡Esto va a causar el Triple Fault!
-
-    # Bucle infinito para no crashear
-    jmp .
-
-# ---------------------------------------------------------
-# DEFINICIÓN DE LA GDT
-# ---------------------------------------------------------
-.align 8
-gdt_start:
-    # 1. Descriptor Nulo (obligatorio, 8 bytes de ceros)
-    .quad 0x0000000000000000
-
-    # 2. Descriptor de Código (Selector 0x08)
-    # Base: 0x00000000, Límite: 0xFFFFF, Granularidad: 4KB, Ejecución/Lectura
-    .word 0xFFFF        # Limit 0:15
-    .word 0x0000        # Base 0:15
-    .byte 0x00          # Base 16:23
-    .byte 0b10011010    # Presente, Privilegio 0 (Ring 0), Tipo: Código Ejecución/Lectura
-    .byte 0b11001111    # Granularidad (4KB), Tamaño 32-bit, Limit 16:19
-    .byte 0x00          # Base 24:31
-
-    # 3. Descriptor de Datos DIFERENCIADO (Selector 0x10)
-    # Base: 0x00010000, Límite: 0xFFFFF, Granularidad: 4KB, Lectura/Escritura
-    .word 0xFFFF        # Limit 0:15
-    .word 0x0000        # Base 0:15 (Ojo acá, sumado al byte siguiente arman la base)
-    .byte 0x01          # Base 16:23 -> BASE TOTAL: 0x00010000
-    .byte 0b10010000    # Presente, Privilegio 0 (Ring 0), Tipo: Datos SOLO LECTURA
-    .byte 0b11001111    # Granularidad (4KB), Tamaño 32-bit, Limit 16:19
-    .byte 0x00          # Base 24:31
-gdt_end:
-
+; INTENTO DE ESCRITURA ILEGAL
+    mov byte [0x500], 0x41  ; Intentamos escribir la letra 'A' en la dirección 0x500
+    ; Bucle infinito para que no se apague
+    jmp $                   
+; =========================================================
+; ESTRUCTURA DE LA GDT (Definida a mano, sin macros)
+; =========================================================
+gdt_inicio:
+gdt_nula:                   ; Descriptor 0: Siempre debe ser nulo (Obligatorio)
+    dd 0x0
+    dd 0x0
+gdt_codigo:                 ; Descriptor 1: Segmento de Código (Selector = 0x08)
+    dw 0xFFFF               ; Límite (bits 0-15)
+    dw 0x0                  ; Base (bits 0-15)
+    db 0x0                  ; Base (bits 16-23)
+    db 10010000b             ; Byte de Acceso: Presente, Ring 0, Código, Ejecutable, Lectura
+    db 11001111b            ; Granularidad (4KB) y Límite (bits 16-19)
+    db 0x0                  ; Base (bits 24-31)
+gdt_datos:                  ; Descriptor 2: Segmento de Datos (Selector = 0x10)
+    dw 0xFFFF               ; Límite (bits 0-15)
+    dw 0x0                  ; Base (bits 0-15)
+    db 0x0                  ; Base (bits 16-23)
+    db 10010010b            ; Byte de Acceso: Presente, Ring 0, Datos, Lectura/Escritura
+    db 11001111b            ; Granularidad (4KB) y Límite (bits 16-19)
+    db 0x0                  ; Base (bits 24-31)
+gdt_fin:
+; El puntero que necesita la instrucción 'lgdt'
 gdt_descriptor:
-    .word gdt_end - gdt_start - 1   # Tamaño de la GDT
-    .long gdt_start                 # Dirección base de la GDT
+    dw gdt_fin - gdt_inicio - 1  ; Tamaño de la tabla (Límite)
+    dd gdt_inicio                ; Dirección donde empieza la tabla
+
+; Relleno para que sea un sector de arranque válido (512 bytes)
+times 510-($-$$) db 0
